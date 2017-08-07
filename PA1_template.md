@@ -1,52 +1,109 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  html_document:
-    keep_md: yes
-  pdf_document: default
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading the libraries to use
-```{r echo=TRUE}
+
+```r
 library(dplyr)
+```
+
+```
+## Warning: package 'dplyr' was built under R version 3.3.3
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.3.3
 ```
 
 
 ## Loading and preprocessing the data
-```{r echo=TRUE}
+
+```r
 data <- read.table("activity.csv", header = TRUE, sep = ",")
 data1 <- data[!is.na(data$steps),]
 date1_steps <- aggregate(data1$steps, by = list(data1$date), FUN = sum)
 ```
 
 ## Visualizing the steps per day using a histogram
-```{r echo=TRUE}
+
+```r
 hist(date1_steps$x)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 ## What is mean total number of steps taken per day?
-```{r echo=TRUE}
+
+```r
 mean(date1_steps$x)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(date1_steps$x)
 ```
 
+```
+## [1] 10765
+```
+
 ## What is the average daily activity pattern?
-```{r echo=TRUE}
+
+```r
 int_avg <- aggregate(data1$steps, by = list(data1$interval), FUN = mean)
 names(int_avg) <- c("interval","avg_steps")
 plot(int_avg$interval, int_avg$avg_steps, type = "l")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+```r
 #now determine the interval with the max number of steps
 int_sort <- int_avg[order(-int_avg$avg_steps),]
 int_sort[1,2]
 ```
 
+```
+## [1] 206.1698
+```
+
 
 ## Imputing missing values
-```{r echo=TRUE}
+
+```r
 #1) number of NA rows
 nrow(data[is.na(data$steps),])
+```
+
+```
+## [1] 2304
+```
+
+```r
 #2) fill in the NA values with the average for that interval across the days
 datam <- merge( x=data , y=int_avg , by="interval", all.x=TRUE)
 datam[is.na(datam$steps),"steps"] <- datam[is.na(datam$steps),"avg_steps"]
@@ -55,13 +112,30 @@ datam <- datam[,c(1,2,3)]
 #4) recalculate
 datem_steps <- aggregate(datam$steps, by = list(datam$date), FUN = sum)
 hist(datem_steps$x)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
 mean(datem_steps$x)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(datem_steps$x)
+```
+
+```
+## [1] 10766.19
 ```
         
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r echo=TRUE}
+
+```r
 datamw <- datam
 datamw <- mutate(datamw, is_weekday=FALSE)
 datamw[!grepl("S(at|un)",weekdays(as.Date(datamw$date))), "is_weekday"] <- TRUE
@@ -76,6 +150,8 @@ ggplot(int_avgmw, aes(interval,avg_steps)) +
       facet_grid(is_weekday~.) +
       ylab("Avg number of steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 
 
